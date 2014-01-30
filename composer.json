@@ -1,5 +1,6 @@
 {
     "name": "hyn/wm",
+    "version":"0.3.1-dev",
     "description": "Hyn multi-tenant webserver manager for media companies and webmasters",
     "keywords": ["laravel","multisite","webserver"],
     "license": "Creative Commons BY-NC-SA 4",
