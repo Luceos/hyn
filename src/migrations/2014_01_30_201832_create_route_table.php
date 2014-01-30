@@ -15,7 +15,11 @@ class CreateRouteTable extends Migration {
 		Schema::connection("website") -> create('route', function(Blueprint $table)
 		{
 			$table->increments('id');
-			$table->timestamps();
+			$table->string('path');
+			$table->string('method')->nullable();
+			$table->boolean('active')->default(true);
+			$table->string('extension');
+			$table->string('name');
 		});
 	}
 
