@@ -1,0 +1,28 @@
+{
+    "name": "hyn/wm",
+    "description": "Hyn multi-tenant webserver manager for media companies and webmasters",
+    "keywords": ["laravel","multisite","webserver"],
+    "license": "Creative Commons BY-NC-SA 4",
+    "authors": [
+        {
+            "name": "Daniël Klabbers",
+            "email": "u@hyn.me"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "illuminate/support": "4.1.*",
+        "guzzle/guzzle": "*",
+        "nesbot/carbon": "*",
+        "swiftmailer/swiftmailer": "*",
+        "rcrowe/twigbridge": "*",
+        "jenssegers/agent": "*",
+        "brainboxlabs/brain-socket": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Hyn": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
