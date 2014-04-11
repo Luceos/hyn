@@ -3,7 +3,7 @@ namespace Hyn\Wm\Framework\Website;
 
 use Eloquent;
 
-class Limits extends Eloquent
+class Limit extends Eloquent
 {
 	protected $connection		= "system";
 	protected $guarded		= array("*");		// prevent mass changes on all columns
@@ -16,6 +16,6 @@ class Limits extends Eloquent
 	}
 	public function scopeType( $query , $type )
 	{
-		return $query -> where( "type" ,"=" , $type) -> first();
+		return $query -> where( "type" , $type) -> first();
 	}
 }

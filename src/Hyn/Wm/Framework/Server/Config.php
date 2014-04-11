@@ -37,9 +37,11 @@ class Config
 			"nginx"		=> array(
 				"php"		=> "fpm",
 				"config"	=> true,
-				"support"	=> "1.4",
+				"support"	=> "1.5",
 			),
 			"apache"	=> array(
+				"php"		=> false,
+				"config"	=> true,
 				"support"	=> false,
 			),
 		);
@@ -49,17 +51,28 @@ class Config
 		App::make('view.finder')->addNamespace("hynwmserverconfig" , __DIR__ . "/views" );
 		# [todo] based on apache or nginx or other webserver?
 		$domains			= array();
+		$ssldomains			= array();
+		$systemSubDomains		= array();
 		$imagedomains			= array();
 		if( !$website -> systemdefault )
-			$domains[]			= sprintf( ".%s.%s" , $website -> primary -> hostname , SiteManager::systemDefault() -> primary -> hostname );
+		{
+			$systemSubDomains[]		= sprintf( ".%s.%s" , $website -> primary -> hostname , SiteManager::systemDefault() -> primary -> hostname );
 			$imagedomains[]			= sprintf( "image.%s.%s" , $website -> primary -> hostname , SiteManager::systemDefault() -> primary -> hostname );
+		}
+		else
+		{
+			$ssldomains[]		= sprintf( ".%s", $website -> primary -> hostname );
+		}
 		foreach( $website -> domains as $domain )
 		{
 			$domains[]		= sprintf( ".%s" , $domain -> hostname );
 			$imagedomains[]		= sprintf( "image.%s" , $domain -> hostname );
 		}
+		
+		$domains			= array_merge( $systemSubDomains , $domains );
+		$ssldomains			= array_merge( $systemSubDomains , $ssldomains );
 		$file				= sprintf( "%s/webserver/nginx/sites/%d-%s" , SiteManager::pathServer() , $website -> websiteID , $website -> primary -> hostname );
-		$nginx				= File::put( $file , View::make( "hynwmserverconfig::nginx" , compact( "website" , "domains" , "imagedomains" ) ) -> render() );
+		$nginx				= File::put( $file , View::make( "hynwmserverconfig::nginx" , compact( "website" , "domains" , "imagedomains" , "ssldomains" ) ) -> render() );
 		
 		$file				= sprintf( "%s/php/fpm/sites/%d-%s" , SiteManager::pathServer() , $website -> websiteID , $website -> primary -> hostname );
 		$fpm				= File::put( $file , View::make( "hynwmserverconfig::php-fpm" , compact( "website" )) -> render() );

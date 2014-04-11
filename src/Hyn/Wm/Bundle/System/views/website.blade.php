@@ -38,8 +38,19 @@
 								@else
 								<div class="alert alert-warning">
 									@lang("hynwmanage::manage.warn_no_disk_usage_limit"): 
-									{{ $website->diskspaceUsed("MB") }} MB
-									@lang("hynwmanage::manage.used"): 
+									@if ($website->diskspaceUsed("MB"))
+										{{ $website->diskspaceUsed("MB") }} MB
+									@else
+										-
+									@endif
+									@lang("hynwmanage::manage.used")
+								</div>
+								@endif
+								@if ($website->databaseSize)
+								<div class="alert alert-warning">
+									@lang("hynwmanage::manage.warn_no_database_usage_limit"): 
+									{{ $website->databaseSize }} B
+									@lang("hynwmanage::manage.used") 
 								</div>
 								@endif
 							</div>
@@ -162,9 +173,9 @@
 							<tr>
 								<td>
 									@if ($domain -> primary )
-										<i class="fa fa-caret-up"></i>
-									@elseif ($domain -> redirect_primary )
-										<i class="fa fa-angle-double-right"></i>
+										<i class="fa fa-caret-up" data-original-title="@lang("hynwmanage::manage.domain_is_primary")"></i>
+									@elseif ($domain -> redirectPrimary )
+										<i class="fa fa-angle-double-right" data-original-title="@lang("hynwmanage::manage.redirect_to_primary_domain")"></i>
 									@else
 										<i class="fa fa-caret-right"></i>
 									@endif
@@ -211,11 +222,11 @@
 								</div>
 								
 								<div class="form-group">
-									{{ Form::label("redirect_primary" , \Lang::get("hynwmanage::manage.redirect_to_primary") , array( "class" => "col-sm-2 control-label" )) }}
+									{{ Form::label("redirectPrimary" , \Lang::get("hynwmanage::manage.redirect_to_primary") , array( "class" => "col-sm-2 control-label" )) }}
 									<div class="col-sm-10">
 										<div class="checkbox block">
 											<label>
-												{{ Form::checkbox( "redirect_primary" , "1" ) }}
+												{{ Form::checkbox( "redirectPrimary" , "1" ) }}
 											</label>
 										</div>
 									</div>

@@ -18,7 +18,11 @@
         "swiftmailer/swiftmailer": "*",
         "rcrowe/twigbridge": "*",
         "jenssegers/agent": "*",
-        "brainboxlabs/brain-socket": "*"
+        "brainboxlabs/brain-socket": "*",
+        "jenssegers/model": "*",
+        "sgrodzicki/pagespeed": "*",
+        "novutec/whoisparser": "*",
+        "seostats/seostats": "dev-master"
     },
     "autoload": {
         "psr-0": {

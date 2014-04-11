@@ -2,7 +2,7 @@
 namespace Hyn\Wm;
 
 # facades
-use App;
+use App, Auth;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\AliasLoader;
@@ -36,12 +36,13 @@ class WmServiceProvider extends ServiceProvider {
 			return new Guard($provider, App::make('session.store') );
 		});
 		$aloader	= AliasLoader::getInstance();
-		$aloader -> alias( "HynSystem" 		, __NAMESPACE__ . "\Framework\Facade\Hynsystem" );
-		$aloader -> alias( "HynServerConfig" 	, __NAMESPACE__ . "\Framework\Facade\Hynserverconfig" );
-		$aloader -> alias( "HynVisitor" 	, __NAMESPACE__ . "\Framework\Facade\Hynvisitor" );
+		$aloader -> alias( "System" 		, __NAMESPACE__ . "\Framework\Facade\System" );
+		$aloader -> alias( "ServerConfig" 	, __NAMESPACE__ . "\Framework\Facade\ServerConfig" );
+				
+		$aloader -> alias( "Setting" 		, __NAMESPACE__ . "\Framework\Facade\Setting" );
 		
-		$aloader -> alias( "SystemEloquent" 	, __NAMESPACE__ . "\Framework\Facade\SystemEloquent" );
-		$aloader -> alias( "SiteEloquent" 	, __NAMESPACE__ . "\Framework\Facade\SiteEloquent" );
+		/* disable multitenancy users for now */
+		\Config::set("database.multitenancy"	, false );
 	}
 
 	/**
@@ -53,31 +54,46 @@ class WmServiceProvider extends ServiceProvider {
 	public function register()
 	{
 		// enable availability of System
-		App::singleton( "hynsystem" , function( $app )
+		App::singleton( "System" , function( $app )
 		{
-				return new Framework\Server\System;
+			return new Framework\Server\System;
 		});
-		App::singleton( "hynserverconfig" , function( $app )
+		App::singleton( "Serverconfig" , function( $app )
 		{
-				return new Framework\Server\Config;
+			return new Framework\Server\Config;
 		});
-		App::singleton( "hynvisitor" , function( $app )
+		App::singleton( "Visitor" , function( $app )
 		{
-				return new Framework\User\Visitor;
+			return new Framework\User\Visitor;
 		});
-		/*
-		App::register( "hynsiteeloquent" , function( $app )
+		App::singleton( "Setting" , function( $app )
 		{
-				return new Framework\Database\SiteEloquent;
+			return new Framework\Website\Setting;
 		});
-		App::register( "hynsystemeloquent" , function( $app )
-		{
-				return new Framework\Database\SystemEloquent;
-		});
-		*/
 		App::before(function($request)
 		{
 			Sitemanager::start();
+			
+			$visitor		= App::make("Visitor");
+			
+			App::singleton( "Website" , function( $app )
+			{
+				return Framework\Website\Website::Current();
+			});
+			$aloader	= AliasLoader::getInstance();
+			$aloader -> alias( "Website" 		, __NAMESPACE__ . "\Framework\Facade\Website" );
+			
+			// inject globals to twig
+			$this -> app['config']->set('twigbridge::globals', 
+				array_merge( 
+					$this -> app['config']->get('twigbridge::globals') 
+					, array(
+						"Website"			=> App::make("Website"),
+						"Visitor"			=> App::make("Visitor"),
+						"User"				=> Auth::user(),
+					) 
+				)
+			);
 		});
 		
 	}

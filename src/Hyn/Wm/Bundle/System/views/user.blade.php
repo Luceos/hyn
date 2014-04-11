@@ -32,7 +32,7 @@
 									{{ _("Unique ID") }}
 								</th>
 								<td>
-									{{ $user -> getUserID() }}
+									{{ $user -> userID }}
 								</td>
 							</tr>
 							<tr>

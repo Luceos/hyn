@@ -13,8 +13,8 @@ class Route extends Eloquent
 		// Set routes and routing
 		// Currently routes all Get, Post, Head, Put etc requests to the same controller; perfect the Route table
 		call_user_func( "\Route::{$this->method}" , $this -> path ,  array(
-			'as'     => $this->name,
-			'uses' => $this->extension,
+			'as'     	=> $this->name,
+			'uses'		=> $this->extension,
 		));
 	}
 	public function getMethodAttribute($value)

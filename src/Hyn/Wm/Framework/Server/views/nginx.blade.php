@@ -7,12 +7,12 @@
 #
 #
 #
-#	General configuration for port 80
+#	General configuration
 #
 #
-
-proxy_cache_path {{ $website->pathCache }}images levels=1:2 keys_zone=img_cache_{{ $website -> websiteID }}:10m max_size=1G;
-
+@if ($website->pathCache)
+proxy_cache_path {{ $website->pathCache }}/images levels=1:2 keys_zone=img_cache_{{ $website -> websiteID }}:10m max_size=1G;
+@endif
 server {
 	# ports to listen on; 80 is default
 	listen   80;
@@ -36,8 +36,9 @@ server {
 	
 	# deny iframe calls from other domains
 	add_header 		X-Frame-Options 	SAMEORIGIN;
-	add_header		X-Hyn-Version		{{ Hynsystem::getVersion() }};
+	add_header		X-Hyn-Version		{{ System::getVersion() }};
 	add_header 		X-Hyn-Website 		{{ $website->websiteID }}-{{ $website->primary->hostname }};
+	add_header		X-Spdy-Version		$spdy;
 	# hide php version
 	proxy_hide_header	X-Powered-By;
 	

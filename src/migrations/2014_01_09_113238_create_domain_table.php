@@ -22,7 +22,7 @@ class CreateDomainTable extends Migration {
 			$table->dateTime("registry_register")->nullable();
 			$table->dateTime("registry_expire")->nullable();
 			$table->dateTime("registry_end")->nullable();
-			$table->boolean("redirect_primary")->default(false);
+			$table->boolean("redirectPrimary")->default(false);
 			$table->softDeletes();
 			$table->timestamps();
 			

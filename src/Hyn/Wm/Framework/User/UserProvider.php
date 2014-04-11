@@ -3,6 +3,7 @@ namespace Hyn\Wm\Framework\User;
 
 use Illuminate\Auth\UserProviderInterface;
 use Illuminate\Auth\GenericUser;
+use Illuminate\Auth\UserInterface;
 
 class UserProvider implements UserProviderInterface
 {
@@ -18,7 +19,7 @@ class UserProvider implements UserProviderInterface
 	{
 		return Base::ByUserID( $credentials['username'] );
 	}
-	public function validateCredentials( \Illuminate\Auth\UserInterface $user, array $credentials )
+	public function validateCredentials( UserInterface $user, array $credentials )
 	{
 		// user disabled
 		if( !empty( $user -> deleted_at ))

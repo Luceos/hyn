@@ -1,7 +1,8 @@
 <?PHP
 namespace Hyn\Wm\Framework\User;
 
-use Eloquent;
+# facades
+use Eloquent, Hash;
 use Illuminate\Auth\UserInterface;
 
 use Hyn\Wm\Framework\Website\Website;
@@ -17,15 +18,15 @@ class Base extends Eloquent implements UserInterface
 	protected $table	= "users";
 	protected $softDelete	= true;
 	
-	public function getUserID()
+	public function getUserIDAttribute()
 	{
-		return sprintf( "%s:%s:%s" , $this -> connection , $this -> isWebsite() ? Website::Current() -> websiteID : 0 , $this -> id );
+		return sprintf( "%s:%s:%s" , $this -> connection , $this -> isWebsite ? Website::Current() -> websiteID : 0 , $this -> id );
 	}
-	public function isWebsite()
+	public function getIsWebsiteAttribute()
 	{
 		return ($this -> connection == "website");
 	}
-	public function isSystem()
+	public function getIsSystemAttribute()
 	{
 		return ($this -> connection == "system");
 	}
@@ -37,11 +38,11 @@ class Base extends Eloquent implements UserInterface
 		// find by e-mail address
 		if(strstr($userID,"@"))
 		{
-			if( ($u = SystemUser::where( "email","=",$userID) -> first()))
+			if( ($u = SystemUser::where( "email",$userID) -> first()))
 			{
 				return $u;
 			}
-			if( ($u = WebsiteUser::where( "email","=",$userID) -> first()))
+			if( ($u = WebsiteUser::where( "email",$userID) -> first()))
 			{
 				return $u;
 			}
@@ -49,23 +50,23 @@ class Base extends Eloquent implements UserInterface
 		// find by username
 		if(!preg_match( "/(system|website):([0-9]+):([0-9]+)/" , $userID , $m ))
 		{
-			if( ($u = SystemUser::where( "username","=",$userID) -> first()))
+			if( ($u = SystemUser::where( "username",$userID) -> first()))
 			{
 				return $u;
 			}
-			if( ($u = WebsiteUser::where( "username","=",$userID) -> first()))
+			if( ($u = WebsiteUser::where( "username",$userID) -> first()))
 			{
 				return $u;
 			}
 		} else
 		// find by unique ID
 		{
-			if( $m[1] == "system" && ($u = SystemUser::where( "id","=",$m[3]) -> first()))
+			if( $m[1] == "system" && ($u = SystemUser::where( "id",$m[3]) -> first()))
 			{
 				return $u;
 			}
 			else
-			if( $m[1] == "website" && ($u = WebsiteUser::where( "id","=",$m[3]) -> first()))
+			if( $m[1] == "website" && ($u = WebsiteUser::where( "id",$m[3]) -> first()))
 			{
 				return $u;
 			}
@@ -82,7 +83,7 @@ class Base extends Eloquent implements UserInterface
 	}
 	public function getAuthIdentifier()
 	{
-		return $this -> getUserID();
+		return $this -> userID;
 	}
 	public function validateCredentials( $un , $pw )
 	{
@@ -91,9 +92,9 @@ class Base extends Eloquent implements UserInterface
 	public function rights()
 	{
 		if( $this -> isSystem() )
-			return AllowedSystem::where("user","=",$this -> getUserID() ) -> get();
+			return AllowedSystem::where("user","=",$this -> userID ) -> get();
 		if( $this -> isWebsite() )
-			return AllowedWebsite::where("user","=",$this -> getUserID() ) -> get();
+			return AllowedWebsite::where("user","=",$this -> userID ) -> get();
 		return array();
 	}
 	public function getSystemAdminAttribute()
