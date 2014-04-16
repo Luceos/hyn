@@ -23,7 +23,6 @@ class Website extends Eloquent
 	protected $guarded		= array("*");		// prevent mass changes on all columns
 	protected $softDelete		= true;			// does not erase table row on erase
 	protected $table		= "website";
-	protected $primaryKey		= "websiteID";
 	
 	static private $_website	= NULL;
 	
@@ -34,28 +33,23 @@ class Website extends Eloquent
 	
 	public function domains()
 	{
-		return $this -> hasMany(__NAMESPACE__."\Domain","websiteID","websiteID");
+		return $this -> hasMany(__NAMESPACE__."\Domain","websiteID","id");
 	}
 	public function limits()
 	{
-		return $this -> hasMany(__NAMESPACE__."\Limit","websiteID","websiteID");
+		return $this -> hasMany(__NAMESPACE__."\Limit","websiteID","id");
 	}
 	public function usage()
 	{
-		return $this -> hasMany(__NAMESPACE__."\Usage","websiteID","websiteID");
+		return $this -> hasMany(__NAMESPACE__."\Usage","websiteID","id");
 	}
 	public function ips()
 	{
-		return $this -> hasMany(static::NAMESPACE_SYSTEM . "\Ip", "websiteID","websiteID");
-	}
-	public function primary()
-	{
-		return $this -> primary;
-		throw new \Exception("use attribute through [getPrimaryAttribute]");
+		return $this -> hasMany(static::NAMESPACE_SYSTEM . "\Ip", "websiteID","id");
 	}
 	public function getPrimaryAttribute()
 	{
-		return Domain::where( "websiteID",$this -> websiteID)
+		return Domain::where( "websiteID",$this -> id)
 				-> where( "primary" , true )
 				-> first();
 	}
@@ -140,7 +134,7 @@ class Website extends Eloquent
 	*/
 	public function getPathAttribute()
 	{
-		$dir		= sprintf( "%s/%s/%s" , base_path() , self::PATH_WEBSITE, $this -> websiteID );
+		$dir		= sprintf( "%s/%s/%s" , base_path() , self::PATH_WEBSITE, $this -> id );
 		return File::exists( $dir ) ? $dir : FALSE;
 	}
 	/**
@@ -151,7 +145,7 @@ class Website extends Eloquent
 	*/
 	public function diskspaceUsed( $unit = "B" )
 	{
-		$usage		= Usage::where( "websiteID", $this -> websiteID ) -> lastByType( "disk" );
+		$usage		= Usage::where( "websiteID", $this -> id ) -> lastByType( "disk" );
 		return $usage -> count() ? Disk::toUnit($usage -> value, $usage -> unit, $unit ) : null;
 	}
 	/**
@@ -171,7 +165,7 @@ class Website extends Eloquent
 		if( Disk::used( $this -> path ) )
 		{
 			Usage::create( array( 
-							"websiteID" 	=> $this -> websiteID,
+							"websiteID" 	=> $this -> id,
 							"type"		=> "disk",
 							"unit"		=> "B",
 							"value"		=> Disk::used( $this -> path )
@@ -179,14 +173,14 @@ class Website extends Eloquent
 		}
 		else
 		{
-			Log::warning( sprintf("Cannot recalculate disk space usage on website %d:%s" , $this -> websiteID, $this -> primary -> hostname ));
+			Log::warning( sprintf("Cannot recalculate disk space usage on website %d:%s" , $this -> id, $this -> primary -> hostname ));
 		}
 		
-		$database			= Database::where( "websiteID", $this -> websiteID ) -> first();
+		$database			= Database::where( "websiteID", $this -> id ) -> first();
 		if( $database )
 		{
 			Usage::create( array( 
-							"websiteID" 	=> $this -> websiteID,
+							"websiteID" 	=> $this -> id,
 							"type"		=> "db",
 							"unit"		=> "B",
 							"value"		=> $database -> size
@@ -194,7 +188,8 @@ class Website extends Eloquent
 		}
 		else
 		{
-			Log::warning( sprintf("Cannot recalculate database usage on website %d:%s" , $this -> websiteID, $this -> primary -> hostname ));
+			Log::warning( sprintf("Cannot recalculate database usage on website %d:%s" , $this -> id, $this -> primary -> hostname ));
+
 		}
 		
 		return TRUE;
@@ -223,11 +218,51 @@ class Website extends Eloquent
 	{
 		return substr($this -> primary -> hostname,0,16);
 	}
+	/**
+	*	Database driver
+	*	@return <string>
+	*	@default mariadb
+	*/
+	public function getDatabaseDriverAttribute()
+	{
+		return "mysql";
+	}
+	/**
+	*	Database hostname
+	*	@return <string>
+	*	@default localhost
+	*/
+	public function getDatabaseHostAttribute()
+	{
+		return "localhost";
+	}
+	/**
+	*	Database collation
+	*	@return <string>
+	*	@default utf8_unicode_ci
+	*/
+	public function getDatabaseCollationAttribute()
+	{
+		return "utf8_unicode_ci";
+	}
+	/**
+	*	Database charset
+	*	@return <string>
+	*	@default utf8
+	*/
+	public function getDatabaseCharsetAttribute()
+	{
+		return "utf8";
+	}
 	public function setConnectDatabaseAttribute( $value )
 	{
-		Config::set("database.connections.{$value}.database"  , $this -> databaseDatabase );
-		Config::set("database.connections.{$value}.username"  , $this -> databaseUsername );
-		Config::set("database.connections.{$value}.password"  , $this -> databasePassword );
+		Config::set("database.connections.{$value}.database"  	, $this -> databaseDatabase );
+		Config::set("database.connections.{$value}.username"  	, $this -> databaseUsername );
+		Config::set("database.connections.{$value}.password"  	, $this -> databasePassword );
+		Config::set("database.connections.{$value}.driver"  	, $this -> databaseDriver );
+		Config::set("database.connections.{$value}.host"  	, $this -> databaseHost );
+		Config::set("database.connections.{$value}.collation"  	, $this -> databaseCollation );
+		Config::set("database.connections.{$value}.charset"  	, $this -> databaseCharset );
 	}
 	/**
 	*	Adds a domain to this website
@@ -238,7 +273,7 @@ class Website extends Eloquent
 	{
 		$domain			= new Domain;
 		$domain -> hostname	= $hostname;
-		$domain -> websiteID	= $this -> websiteID;
+		$domain -> websiteID	= $this -> id;
 		$domain -> primary	= (!count($this -> domains));
 		$domain -> save();
 		return $domain;
@@ -270,7 +305,9 @@ class Website extends Eloquent
 		if( $domain )
 		{
 			Log::warning("Website for {$hostname} already exists, continueing to test folder and database existence" );
-			$website		= Website::where( "websiteID" , "=" , $domain -> websiteID ) -> first();
+
+			$website		= Website::where( "id" , "=" , $domain -> websiteID ) -> first();
+
 		}
 		else
 		{
@@ -282,7 +319,7 @@ class Website extends Eloquent
 		}
 		
 		// set up folders
-		$baseDir	= sprintf( "%s/%s/%s" , base_path() , self::PATH_WEBSITE, $website -> websiteID );
+		$baseDir	= sprintf( "%s/%s/%s" , base_path() , self::PATH_WEBSITE, $website -> id );
 		$dir		= sprintf( "%s/%s" , $baseDir , self::PATH_WEBSITE_MEDIA );
 		if( !File::exists( $dir ))
 		{
@@ -359,10 +396,12 @@ class Website extends Eloquent
 		
 		$website -> writeServerConfig();
 		
-		return Redirect::route("manage:website" , $website -> websiteID);
+		return Redirect::route("manage:website" , $website -> id);
 	}
 	public function writeServerConfig()
 	{
-		return ServerConfig::write($this);
+		\Queue::push( "Hyn\Wm\Framework\Queue\WebsiteJob", ['website_id' => $this -> id, 'write_config' => true] );
+		# now add a task to update configuration files
+		#return ServerConfig::writeAndRestart($this);
 	}
 } 

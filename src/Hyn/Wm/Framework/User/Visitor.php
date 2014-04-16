@@ -7,7 +7,7 @@ use Request, Input, Auth, App;
 # user agent by Jens Segers
 use Jenssegers\Agent\Agent;
 # IoC like model
-use Jenssegers\Model\Model;
+use Model;
 
 class Visitor extends Model
 {

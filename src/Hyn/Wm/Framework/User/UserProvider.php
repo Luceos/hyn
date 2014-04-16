@@ -26,4 +26,12 @@ class UserProvider implements UserProviderInterface
 			return false;
 		return $user -> validateCredentials( $credentials['username'] , $credentials['password'] );
 	}
+	public function updateRememberToken(UserInterface $user, $token)
+	{
+		
+	}
+	public function retrieveByToken($identifier, $token)
+	{
+	
+	}
 }

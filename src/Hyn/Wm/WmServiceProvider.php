@@ -2,7 +2,7 @@
 namespace Hyn\Wm;
 
 # facades
-use App, Auth;
+use App, Auth, Config;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\AliasLoader;
@@ -30,19 +30,21 @@ class WmServiceProvider extends ServiceProvider {
 	{
 		$this->package('hyn/wm');
 		// add custom authentication
-		\Auth::extend( "HynWM" , function($app)
+		Auth::extend( "HynWM" , function($app)
 		{
-			$provider		= new UserProvider;
+			$provider			= new UserProvider;
 			return new Guard($provider, App::make('session.store') );
 		});
-		$aloader	= AliasLoader::getInstance();
+
+		$aloader				= AliasLoader::getInstance();
+
 		$aloader -> alias( "System" 		, __NAMESPACE__ . "\Framework\Facade\System" );
 		$aloader -> alias( "ServerConfig" 	, __NAMESPACE__ . "\Framework\Facade\ServerConfig" );
 				
 		$aloader -> alias( "Setting" 		, __NAMESPACE__ . "\Framework\Facade\Setting" );
 		
 		/* disable multitenancy users for now */
-		\Config::set("database.multitenancy"	, false );
+		Config::set("database.multitenancy"	, true );
 	}
 
 	/**

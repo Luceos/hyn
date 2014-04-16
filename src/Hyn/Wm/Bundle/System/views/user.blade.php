@@ -142,7 +142,7 @@
 							</tr>
 							@endforeach
 						</table>
-						@if (Auth::user() -> systemAdmin)
+						@if ($admin)
 						<div class="tab-pane" id="right-add">
 							{{ Form::open( array( "class" => "form-horizontal" ) ) }}
 								{{ Form::hidden( "add" , 1 ) }}

@@ -3,10 +3,10 @@
 	<ol class="breadcrumb">
 		<li><a href="{{ URL::route("manage") }}">@lang("hynwmanage::manage.dashboard")</a></li>
 		<li><a href="{{ URL::route("manage:websites") }}">@choice("hynwmanage::manage.website",2)</a></li>
-		<li class='active'><a href="{{ URL::route("manage:website",$website->websiteID) }}">{{ $website->primary()->hostname }}</a>
+		<li class='active'><a href="{{ URL::route("manage:website",$website->id) }}">{{ $website->primary->hostname }}</a>
 	</ol>
 
-	<h1>{{ $website -> primary() -> hostname }}</h1>
+	<h1>{{ $website->primary -> hostname }}</h1>
 </div>
 
 
@@ -119,16 +119,16 @@
 						</table>
 					</div>
 				</div>
-				@if (Auth::user() -> systemAdmin)
+				@if ($admin)
 				<div class="panel-footer">
 					
 	
 					{{ Form::open( array( "class" => "options" ) ) }}
 						<div class="btn-toolbar">
-							<button class="btn btn-sm btn-default" type="submit" name="writeServerConfig" value="{{ $website->websiteID }}">
+							<button class="btn btn-sm btn-default" type="submit" name="writeServerConfig" value="{{ $website->id }}">
 								<i class="fa fa-cog"></i> @lang("hynwmanage::manage.save_webserver_config")
 							</button>
-							<button class="btn btn-sm btn-default" type="submit" name="recalculateStatistics" value="{{ $website->websiteID }}">
+							<button class="btn btn-sm btn-default" type="submit" name="recalculateStatistics" value="{{ $website->id }}">
 								<i class="fa fa-cog"></i> @lang("hynwmanage::manage.recalculate_statistics")
 							</button>
 						</div>
@@ -146,7 +146,7 @@
 					<div class="options">
 						<ul class="nav nav-tabs">
 							<li class="active"><a href="#domains" data-toggle="tab">@lang("hynwmanage::manage.list")</a></li>
-							@if (Auth::user() -> systemAdmin)
+							@if ($admin)
 							<li><a href="#domain-add" data-toggle="tab">@lang("hynwmanage::manage.add")</a></li>
 							@endif
 						</ul>
@@ -210,7 +210,7 @@
 							</tr>
 							@endforeach
 						</table>
-						@if (Auth::user() -> systemAdmin)
+						@if ($admin)
 						<div id="domain-add" class="tab-pane row">
 							{{ Form::open( array( "class" => "form-horizontal" ) ) }}
 								{{ Form::hidden("add",1) }}

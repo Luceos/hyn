@@ -2,7 +2,7 @@
 #	Auto generated Nginx configuration
 #		provided by Hyn WM
 #
-#	Website: #{{ $website -> websiteID }} {{ $website -> primary -> hostname }} 
+#	Website: #{{ $website -> id }} {{ $website -> primary -> hostname }} 
 #	On: {{ date("Y-m-d H:i:s" ) }} 
 #
 #
@@ -11,7 +11,9 @@
 #
 #
 @if ($website->pathCache)
-proxy_cache_path {{ $website->pathCache }}/images levels=1:2 keys_zone=img_cache_{{ $website -> websiteID }}:10m max_size=1G;
+
+proxy_cache_path {{ $website->pathCache }}/images levels=1:2 keys_zone=img_cache_{{ $website -> id }}:10m max_size=1G;
+
 @endif
 server {
 	# ports to listen on; 80 is default
@@ -37,7 +39,8 @@ server {
 	# deny iframe calls from other domains
 	add_header 		X-Frame-Options 	SAMEORIGIN;
 	add_header		X-Hyn-Version		{{ System::getVersion() }};
-	add_header 		X-Hyn-Website 		{{ $website->websiteID }}-{{ $website->primary->hostname }};
+	add_header 		X-Hyn-Website 		{{ $website->id }}-{{ $website->primary->hostname }};
+
 	add_header		X-Spdy-Version		$spdy;
 	# hide php version
 	proxy_hide_header	X-Powered-By;
@@ -77,7 +80,7 @@ server {
 	}
 	location ~* ^/(resize|crop)/ {
             proxy_pass 		http://image-cache.{{ $website->primary->hostname }}$request_uri;
-            proxy_cache 	img_cache_{{ $website -> websiteID }};
+            proxy_cache 	img_cache_{{ $website -> id }};
             proxy_cache_key 	"$host$document_uri";
             proxy_cache_valid 	200 1d;
             proxy_cache_valid 	any 1m;
@@ -98,7 +101,7 @@ server {
 	}
 	# pass the PHP scripts to FastCGI server from upstream phpfcgi
 	location ~ \.php(/|$) {
-		fastcgi_pass 	127.0.0.1:{{ 10000 + $website->websiteID }};
+		fastcgi_pass 	127.0.0.1:{{ 10000 + $website->id }};
 		include 	fastcgi_params;
 		
 		fastcgi_split_path_info ^(.+\.php)(/.*)$;
