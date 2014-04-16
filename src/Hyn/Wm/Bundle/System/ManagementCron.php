@@ -3,6 +3,7 @@ namespace Hyn\Wm\Bundle\System;
 
 use Hyn\Wm\Framework\Website\Website;
 
+die("should be scheduled command");
 class ManagementCron
 {
 	public function fire( $job , $data )

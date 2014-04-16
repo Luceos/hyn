@@ -1,12 +1,12 @@
 
 
 # define unique group with WebsiteID
-[Hyn-WM-{{ $website->websiteID }}]
-listen                  = 127.0.0.1:{{ 10000 + $website->websiteID }}
+[Hyn-WM-{{ $website -> id }}]
+listen                  = 127.0.0.1:{{ 10000 + $website -> id }}
 
 # [todo] create seperate users per site
-user                    = luceos
-group                   = luceos
+user                    = www-data
+group                   = www-data
 
 pm                      = dynamic
 pm.max_children         = 20

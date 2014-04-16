@@ -36,10 +36,10 @@
 												@foreach ($websites as $website)
 												<tr>
 													<td>
-														<a href="{{ URL::route("manage:website",$website->websiteID) }}">{{ $website->primary()->hostname }}</a>
+														<a href="{{ URL::route("manage:website",$website->id) }}">{{ $website->primary->hostname }}</a>
 													</td>
 													<td class="text-center">
-														<a href="{{ URL::route("manage:website",$website->websiteID) }}">{{ count($website->domains) }}</a>
+														<a href="{{ URL::route("manage:website",$website->id) }}">{{ count($website->domains) }}</a>
 													</td>
 													<td class="text-center">
 														{{ $website->diskspaceUsed("MB") }}
@@ -62,7 +62,7 @@
 											</tfoot>
 										</table>
 									</div>
-									@if (Auth::user() -> systemAdmin)
+									@if ($admin)
 									<div class="panel-footer">
 										@if ($errors)
 											@foreach ($errors as $error)

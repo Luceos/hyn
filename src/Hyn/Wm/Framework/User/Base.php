@@ -66,7 +66,7 @@ class Base extends Eloquent implements UserInterface
 				return $u;
 			}
 			else
-			if( $m[1] == "website" && ($u = WebsiteUser::where( "id",$m[3]) -> first()))
+			if( $m[1] == "website" && $m[2] == Website::Current() -> getKey() && ($u = WebsiteUser::where( "id",$m[3]) -> first()))
 			{
 				return $u;
 			}
@@ -87,13 +87,13 @@ class Base extends Eloquent implements UserInterface
 	}
 	public function validateCredentials( $un , $pw )
 	{
-		return \Hash::check( $pw , $this -> password );
+		return Hash::check( $pw , $this -> password );
 	}
 	public function rights()
 	{
-		if( $this -> isSystem() )
+		if( $this -> isSystem )
 			return AllowedSystem::where("user","=",$this -> userID ) -> get();
-		if( $this -> isWebsite() )
+		if( $this -> isWebsite )
 			return AllowedWebsite::where("user","=",$this -> userID ) -> get();
 		return array();
 	}
@@ -104,5 +104,20 @@ class Base extends Eloquent implements UserInterface
 	public function getAgeAttribute()
 	{
 		return Carbon::parse($this -> created_at) -> diffForHumans();
+	}
+	public function gravatarUri( $size = 100 )
+	{
+		return $this -> email ? sprintf( "//gravatar.com/avatar/%s.png?size={$size}", md5( $this -> email ) ) : NULL;
+	}
+	public function getRememberToken()
+	{
+	
+	}
+	public function setRememberToken($token)
+	{
+	
+	}
+	public function getRememberTokenName()
+	{
 	}
 }

@@ -58,7 +58,8 @@
 											</tfoot>
 										</table>
 									</div>
-{{--									<div class="panel-footer">
+									@if ($admin)
+									<div class="panel-footer">
 										@if ($errors)
 											@foreach ($errors as $error)
 											<div class="alert alert-dismissable alert-danger">
@@ -66,11 +67,23 @@
 											</div>
 											@endforeach
 										@endif
-										{{ Form::open( array( "class" => "form-horizontal" ) ) }}
+										{{ Form::open( array( "class" => "form-horizontal", "autocomplete" => "off" ) ) }}
 											<div class="form-group">
 												{{ Form::label("username" , _("Username"), array( "class" => "col-sm-2 control-label" )) }}
 												<div class="col-sm-10">
-													{{ Form::text( "username" , NULL, array( "class" => "form-control", "placeholder" => _("uniqueusername") ) ) }}
+													{{ Form::text( "username" , NULL, array( "class" => "form-control", "placeholder" => _("unique username"), "autocomplete" => "off" ) ) }}
+												</div>
+											</div>
+											<div class="form-group">
+												{{ Form::label("email" , _("E-mailadres"), array( "class" => "col-sm-2 control-label" )) }}
+												<div class="col-sm-10">
+													{{ Form::text( "email" , NULL, array( "class" => "form-control", "placeholder" => _("your@domain.com"), "autocomplete" => "off" ) ) }}
+												</div>
+											</div>
+											<div class="form-group">
+												{{ Form::label("password" , _("Password"), array( "class" => "col-sm-2 control-label" )) }}
+												<div class="col-sm-10">
+													{{ Form::password( "password" , array( "class" => "form-control", "autocomplete" => "off" ) ) }}
 												</div>
 											</div>
 											<div class="form-group">
@@ -80,7 +93,7 @@
 											</div>
 										{{ Form::close() }}
 									</div>
---}}
+									@endif
 								</div>
 							</div>
 						</div>

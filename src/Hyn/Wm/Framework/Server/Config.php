@@ -6,7 +6,7 @@ use Hyn\Wm\Framework\Website\Sitemanager;
 use Hyn\Wm\Framework\Website\Website;
 
 # facades
-use Request, View, App, File;
+use Request, View, App, File, Queue;
 
 class Config 
 {
@@ -46,7 +46,7 @@ class Config
 			),
 		);
 	}
-	public function write( Website $website )
+	public static function write( Website $website )
 	{
 		App::make('view.finder')->addNamespace("hynwmserverconfig" , __DIR__ . "/views" );
 		# [todo] based on apache or nginx or other webserver?
@@ -71,10 +71,10 @@ class Config
 		
 		$domains			= array_merge( $systemSubDomains , $domains );
 		$ssldomains			= array_merge( $systemSubDomains , $ssldomains );
-		$file				= sprintf( "%s/webserver/nginx/sites/%d-%s" , SiteManager::pathServer() , $website -> websiteID , $website -> primary -> hostname );
+		$file				= sprintf( "%s/webserver/nginx/sites/%d-%s" , SiteManager::pathServer() , $website -> id , $website -> primary -> hostname );
 		$nginx				= File::put( $file , View::make( "hynwmserverconfig::nginx" , compact( "website" , "domains" , "imagedomains" , "ssldomains" ) ) -> render() );
 		
-		$file				= sprintf( "%s/php/fpm/sites/%d-%s" , SiteManager::pathServer() , $website -> websiteID , $website -> primary -> hostname );
+		$file				= sprintf( "%s/php/fpm/sites/%d-%s" , SiteManager::pathServer() , $website -> id , $website -> primary -> hostname );
 		$fpm				= File::put( $file , View::make( "hynwmserverconfig::php-fpm" , compact( "website" )) -> render() );
 		
 		return ( $nginx > 0 && $fpm > 0 );
