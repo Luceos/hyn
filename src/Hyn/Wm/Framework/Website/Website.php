@@ -2,7 +2,10 @@
 namespace Hyn\Wm\Framework\Website;
 
 # facades
-use Eloquent, File, DB, Redirect, Schema, Config, HynServerConfig;
+use Eloquent, File, DB, Redirect, Schema, Config, ServerConfig, Log;
+
+use Hyn\Wm\Framework\Server\Disk;
+use Hyn\Wm\Framework\Server\Database;
 
 class Website extends Eloquent
 {
@@ -35,7 +38,7 @@ class Website extends Eloquent
 	}
 	public function limits()
 	{
-		return $this -> hasMany(__NAMESPACE__."\Limits","websiteID","websiteID");
+		return $this -> hasMany(__NAMESPACE__."\Limit","websiteID","websiteID");
 	}
 	public function usage()
 	{
@@ -111,6 +114,18 @@ class Website extends Eloquent
 		return $this -> path && File::exists( $dir ) ? $dir : FALSE;
 	}
 	/**
+	*	Returns public url to media
+	*	@return <path>
+	*/
+	public function getMediaURLAttribute()
+	{
+		if( $this -> pathMedia )
+		{
+			return sprintf( "//image.%s/%s/" , $this -> domain -> hostname , self::PATH_WEBSITE_MEDIA );
+		}
+		return false;
+	}
+	/**
 	*	Returns website path for cache or fails if it does not exist
 	*	@return path or false
 	*/
@@ -134,19 +149,10 @@ class Website extends Eloquent
 	*	SIZE is an integer and optional unit (example: 10M is 10*1024*1024).  Units
 	*		are K, M, G, T, P, E, Z, Y (powers of 1024) or KB, MB, ... (powers of 1000).
 	*/
-	public function diskspaceUsed( $unit="B" )
+	public function diskspaceUsed( $unit = "B" )
 	{
-		if( !$this -> path )	return 0;
-		
-		exec( sprintf( "du -s -B%s %s" , (strlen($unit) > 1 ? substr($unit,0,1) : $unit ) , $this -> path ) , $out , $state );
-		
-		if( $state == 0 )
-		{
-			$out		= explode( "\t" , $out[0] );
-			$b		= array_shift( $out );
-			return substr($b,0,-1);
-		}
-		return false;
+		$usage		= Usage::where( "websiteID", $this -> websiteID ) -> lastByType( "disk" );
+		return $usage -> count() ? Disk::toUnit($usage -> value, $usage -> unit, $unit ) : null;
 	}
 	/**
 	*	Provides used diskspace as percentage of current limit
@@ -154,7 +160,7 @@ class Website extends Eloquent
 	*/
 	public function diskspacePercentage()
 	{
-		if( !count($this -> limits) || !$this -> limits() -> type("disk") || !$this -> diskspaceUsed("MB") )
+		if( !count($this -> limits) || !$this -> limits() -> type("disk") -> count() || !$this -> diskspaceUsed("MB") )
 			return 0;
 		$perc			= ceil(($this -> diskspaceUsed("MB") / $this -> limits() -> type("disk") -> value) * 100);
 		
@@ -162,11 +168,34 @@ class Website extends Eloquent
 	}
 	public function getRecalculateStatisticsAttribute()
 	{
-		$diskusage		= Usage::create( array( 
+		if( Disk::used( $this -> path ) )
+		{
+			Usage::create( array( 
 							"websiteID" 	=> $this -> websiteID,
 							"type"		=> "disk",
-							"value"		=> $this -> diskspaceUsed()
+							"unit"		=> "B",
+							"value"		=> Disk::used( $this -> path )
 						));
+		}
+		else
+		{
+			Log::warning( sprintf("Cannot recalculate disk space usage on website %d:%s" , $this -> websiteID, $this -> primary -> hostname ));
+		}
+		
+		$database			= Database::where( "websiteID", $this -> websiteID ) -> first();
+		if( $database )
+		{
+			Usage::create( array( 
+							"websiteID" 	=> $this -> websiteID,
+							"type"		=> "db",
+							"unit"		=> "B",
+							"value"		=> $database -> size
+						));
+		}
+		else
+		{
+			Log::warning( sprintf("Cannot recalculate database usage on website %d:%s" , $this -> websiteID, $this -> primary -> hostname ));
+		}
 		
 		return TRUE;
 	}
@@ -215,6 +244,21 @@ class Website extends Eloquent
 		return $domain;
 	}
 	/**
+	*	Calculate size of current website database
+	*	@return <integer> bytes
+	*/
+	public function getDatabaseSizeAttribute()
+	{
+		$tables			= DB::select(DB::raw( "SHOW TABLE STATUS"));
+		$size			= 0;
+		foreach( $tables as $table )
+		{
+			$size		=+ $table -> Data_length + $table -> Index_length;
+		}
+		return $size;
+		
+	}
+	/**
 	*	Generates a complete new website
 	*	@param $hostname	valid domain name used as primary domain for website
 	*	@return \Redirect
@@ -225,7 +269,7 @@ class Website extends Eloquent
 		
 		if( $domain )
 		{
-			\Log::warning("Website for {$hostname} already exists, continueing to test folder and database existence" );
+			Log::warning("Website for {$hostname} already exists, continueing to test folder and database existence" );
 			$website		= Website::where( "websiteID" , "=" , $domain -> websiteID ) -> first();
 		}
 		else
@@ -259,21 +303,26 @@ class Website extends Eloquent
 		{
 			File::makeDirectory( $dir , 0777 , true );
 		}
+		$dir		= sprintf( "%s/%s" , $baseDir , self::PATH_WEBSITE_CACHE );
+		if( !File::exists( $dir ))
+		{
+			File::makeDirectory( $dir , 0777 , true );
+		}
 		$database		= $website -> databaseDatabase;
 		$password		= $website -> databasePassword;
 		$username		= $website -> databaseUsername;
 		// next step would be to setup database and create settings for database
-		DB::connection("system") -> transaction(function() use ($hostname,$website,$database,$password,$username)
+		DB::connection("system") -> transaction(function() use ( $database , $password , $username )
 		{
 			// add table if not exists
 			DB::connection("system") -> statement( "CREATE DATABASE IF NOT EXISTS `{$database}`" );			
 			// creates user if not exists
 			DB::connection("system") -> statement( "GRANT ALL PRIVILEGES ON `{$database}`.* TO '{$username}'@'localhost' IDENTIFIED BY '{$password}'" );
 		});
-		// set database connection ;)
-		Config::set('database.connections.website-modify.database',$database);
-		Config::set('database.connections.website-modify.username',$username);
-		Config::set('database.connections.website-modify.password',$password);
+		
+		// set up connection
+		$website -> connectDatabase = "website-modify";
+		
 		// create schema's
 		if( !Schema::connection("website-modify") -> hasTable('route') )
 		{
@@ -314,6 +363,6 @@ class Website extends Eloquent
 	}
 	public function writeServerConfig()
 	{
-		return HynServerConfig::write($this);
+		return ServerConfig::write($this);
 	}
 } 

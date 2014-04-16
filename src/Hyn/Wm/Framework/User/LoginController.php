@@ -1,5 +1,5 @@
 <?PHP
-namespace Hyn\Wm\Bundle\User;
+namespace Hyn\Wm\Framework\User;
 
 use Hyn\Wm\Bundle\System\ManagementController;
 # facades

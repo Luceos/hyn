@@ -6,7 +6,7 @@ use BaseController;
 use Hyn\Wm\Framework\Website;
 use Hyn\Wm\Framework\User;
 # facades
-use Validator, View, Auth, Lang, App, Input, Redirect;
+use Validator, View, Auth, Lang, App, Input, Redirect, DB;
 
 use Hyn\Wm\Framework\Right;
 
@@ -33,6 +33,7 @@ class ManagementController extends BaseController
 	
 	public function websites()
 	{
+		$this -> layout -> title	= _("Websites");
 		if( Auth::user() -> systemAdmin && Input::get('hostname') )
 		{
 			$validator			= Validator::make(
@@ -48,8 +49,27 @@ class ManagementController extends BaseController
 				return Website\Website::autoCreate( Input::get("hostname") );
 			}
 		}
-		$this -> layout -> title	= _("Websites");
-		$websites			= Website\Website::paginate(10);
+		
+		// set sorting direction
+		$sortDirection					= Input::get("sortdir") == "desc" ? "desc" : "asc";
+		
+		
+		switch( Input::get("sort","hostname") )
+		{
+			// [TODO] does not work
+			case "domains":
+				$websites	= Website\Website::join( 'domain' , 'website.websiteID' , '=' , 'domain.websiteID' )
+							-> select( DB::raw('website.*, domain.*, COUNT(domain.hostname) as domaincount' ))
+							-> orderBy( 'domaincount' , $sortDirection) 
+							-> paginate(10);
+				break;
+			case "hostname":
+			default:
+				$websites	= Website\Website::join( 'domain' , 'website.websiteID' , '=' , 'domain.websiteID' )
+							-> where( "domain.primary", 1 ) 
+							-> orderBy( 'hostname' , $sortDirection) 
+							-> paginate(10);
+		}
 		$this -> layout -> content	= View::make("hynwmanage::websites",compact("websites","domains"));
 	}
 	
@@ -92,7 +112,7 @@ class ManagementController extends BaseController
 			else
 			{
 				$domain				= $website -> addDomain( Input::get('hostname') );
-				$domain -> redirect_primary 	= Input::get('redirect_primary');
+				$domain -> redirectPrimary 	= Input::get('redirectPrimary');
 				$domain -> save();
 				
 				return Redirect::route("manage:website",$website -> websiteID);
@@ -116,7 +136,7 @@ class ManagementController extends BaseController
 			if( Input::get('add') )
 			{
 				$sr		= new Right\AllowedSystem;
-				$sr -> user	= $user -> getUserID();
+				$sr -> user	= $user -> userID;
 				$sr -> right	= Input::get("right");
 				$sr -> level	= Input::get("level");
 				$sr -> item	= Input::get("item");
@@ -139,5 +159,10 @@ class ManagementController extends BaseController
 	{
 		$this -> layout -> title	= Lang::get("hynwmanage::manage.system");
 		$this -> layout -> content	= View::make('hynwmanage::system');
+	}
+	public function databases()
+	{
+		$this -> layout -> title	= Lang::get("hynwmanage::manage.databases");
+		$this -> layout -> content	= View::make("hynwmanage::databases");
 	}
 }

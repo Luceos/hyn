@@ -43,4 +43,9 @@ class Domain extends Eloquent
 		$ip	= $this -> resolvingIp;
 		return (!empty($ip) && ($found = Ip::find($ip)) && $found -> systemdefault);
 	}
+	
+	public function getRedirectPrimaryAttribute($value)
+	{
+		return (bool) $value;
+	}
 }

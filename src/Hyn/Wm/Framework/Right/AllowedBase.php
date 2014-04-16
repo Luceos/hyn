@@ -23,17 +23,17 @@ abstract class AllowedBase extends Eloquent
 	{
 		if( $item && $level )
 		{
-			return (bool) static::where( "user" , "=" , $user -> getUserID() ) -> where( "right" , "=" , $right ) -> where( "item" , "=" , $item ) -> where( "level" , ">=" , $level ) -> count();
+			return (bool) static::where( "user" , "=" , $user -> userID ) -> where( "right" , "=" , $right ) -> where( "item" , "=" , $item ) -> where( "level" , ">=" , $level ) -> count();
 		}
 		elseif( $item )
 		{
-			return (bool) static::where( "user" , "=" , $user -> getUserID() ) -> where( "right" , "=" , $right ) -> where( "item" , "=" , $item ) -> count();
+			return (bool) static::where( "user" , "=" , $user -> userID ) -> where( "right" , "=" , $right ) -> where( "item" , "=" , $item ) -> count();
 		}
 		elseif( $level )
 		{
-			return (bool) static::where( "user" , "=" , $user -> getUserID() ) -> where( "right" , "=" , $right ) -> where( "level" , ">=" , $level ) -> count();
+			return (bool) static::where( "user" , "=" , $user -> userID ) -> where( "right" , "=" , $right ) -> where( "level" , ">=" , $level ) -> count();
 		}
-		return (bool) static::where( "user" , "=" , $user -> getUserID() ) -> where( "right" , "=" , $right ) -> count();
+		return (bool) static::where( "user" , "=" , $user -> userID ) -> where( "right" , "=" , $right ) -> count();
 	}
 	public static function give( BaseUser $user , Right $right , $item = false , $level = false )
 	{
@@ -41,7 +41,7 @@ abstract class AllowedBase extends Eloquent
 			return true;
 		
 		$right		= static::__construct();
-		$right -> user	= $user -> getUserID();
+		$right -> user	= $user -> userID;
 		$right -> right	= $right;
 		if( $item )
 			$right -> item	= $item;

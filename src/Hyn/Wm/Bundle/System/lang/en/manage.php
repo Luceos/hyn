@@ -20,9 +20,12 @@ return array(
 	"disk_limit"		=> "disk limit",
 	"bandwidth_limit"	=> "bandwidth limit",
 	
+	"used"			=> "used",
+	
 	"load"			=> "system load",
 	
 	"warn_no_disk_usage_limit"	=> "No disk usage limit set",
+	"warn_no_database_usage_limit"	=> "No database usage limit set",
 	
 	"website_id"		=> "website ID",
 	
@@ -44,6 +47,9 @@ return array(
 	"dns_site_resolves_default"	=> "Resolves to system default IP|:hostname is resolving to the default system IP address",
 	"dns_site_resolves_system"	=> "Resolves to system IP|:hostname is resolving to a non-default system IP address",
 	"dns_site_resolves_not"		=> "Not resolving to system|:hostname is not resolving to any currently registered IP's on the system",
+	
+	"domain_is_primary"	=> "This is the primary domain",
+	"redirect_to_primary_domain"	=> "This domain redirects to the primary domain",
 	
 	"logged_in_as"		=> "Logged in as",
 	

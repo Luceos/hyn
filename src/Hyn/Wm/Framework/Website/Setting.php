@@ -10,6 +10,15 @@ class Setting extends Eloquent
 	
 	public function scopeName( $query , $name=NULL )
 	{
-		return $query -> where( "name" , "=" , $name );
+		return $query -> where( "name" , "=" , $name ) -> first();
+	}
+	public function scopeNameValue( $query, $name )
+	{
+		$setting		= $query -> where( "name" , "=" , $name ) -> first();
+		if( $setting -> count() )
+		{
+			return $setting -> value;
+		}
+		return NULL;
 	}
 }

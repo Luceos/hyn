@@ -1,7 +1,9 @@
 <?PHP
 namespace Hyn\Wm\Framework\Right;
 
-final class Right extends \SplEnum
+use SplEnum;
+
+final class Right extends SplEnum
 {
 	/**
 	*	Constants for both website and system

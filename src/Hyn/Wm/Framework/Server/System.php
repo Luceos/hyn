@@ -1,6 +1,8 @@
 <?PHP
 namespace Hyn\Wm\Framework\Server;
 
+use DB;
+
 class System
 {
 	// unified version of Hyn; only place this is recorded
@@ -8,6 +10,12 @@ class System
 
 	const LOAD_MAX_SOFT		= 5;		// soft
 	const LOAD_MAX_CRIT		= 10;
+	
+	public function databaseSizes()
+	{
+		return DB::select( DB::raw( 'SELECT table_schema as `name`, sum( data_length + index_length ) as `used`, sum( data_free ) as `free`
+					FROM information_schema.TABLES GROUP BY table_schema;'));
+	}
 	
 	public function getVersion()
 	{
