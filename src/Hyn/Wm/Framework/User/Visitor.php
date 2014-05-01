@@ -17,7 +17,7 @@ class Visitor extends Model
 		$this -> agent		= new Agent;
 		if( !in_array( App::getLocale() , $this -> agent -> languages() ))
 		{
-			App::setLocale( array_first( $this -> agent -> languages() ));
+			App::setLocale( head( $this -> agent -> languages() ));
 		}
 	}
 	public function getUserAttribute()
